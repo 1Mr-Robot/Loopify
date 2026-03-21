@@ -4,13 +4,17 @@ Este documento contiene toda la informacion tecnica necesaria para entender, mod
 
 ---
 
+> **Nota importante:** Esta documentacion corresponde a la rama `demo` del proyecto. En esta version, el proyecto ha sido modificado para funcionar con datos estaticos almacenados en **localStorage** en lugar de consumir una API REST externa. Esto permite que la aplicacion funcione completamente offline y sin dependencias de servidor.
+
+---
+
 ## Tabla de Contenidos
 
 1. [Configuracion del Entorno](#configuracion-del-entorno)
 2. [Estructura del Proyecto](#estructura-del-proyecto)
 3. [Tecnologias y Dependencias](#tecnologias-y-dependencias)
-4. [API REST](#api-rest)
-5. [Modulo de Configuracion](#modulo-de-configuracion)
+4. [Sistema de Datos (localStorage)](#sistema-de-datos-localstorage)
+5. [Modulo de Configuracion y Datos](#modulo-de-configuracion-y-datos)
 6. [Script General](#script-general)
 7. [Script Index](#script-index)
 8. [Script Mi Perfil](#script-mi-perfil)
@@ -23,6 +27,7 @@ Este documento contiene toda la informacion tecnica necesaria para entender, mod
 15. [Manejo de Errores](#manejo-de-errores)
 16. [Validacion de Formularios](#validacion-de-formularios)
 17. [Convenciones de Codigo](#convenciones-de-codigo)
+18. [Migracion a API REST](#migracion-a-api-rest)
 
 ---
 
@@ -58,11 +63,13 @@ Cada script define las siguientes variables al inicio:
 var matricula = "2177709";
 var llave = "5912fdbc-39b0-4071-ba39-71e52e188d78";
 var dominio = "https://redsocial.luislepe.tech/api/";
+var nombreUsuario = "Uziel Omar Flores Torres";
 ```
 
 - `matricula`: Identificador unico del usuario (tambien usado como idUsuario)
-- `llave`: Token de autenticacion para la API (llave secreta)
-- `dominio`: URL base de la API REST
+- `llave`: Token de autenticacion (mantenido por compatibilidad, no usado en localStorage)
+- `dominio`: URL base de la API (mantenido por compatibilidad, no usado en localStorage)
+- `nombreUsuario`: Nombre completo del usuario para mostrar en publicaciones y comentarios
 
 ---
 
@@ -143,274 +150,203 @@ El proyecto utiliza Subresource Integrity (SRI) para verificar la integridad de 
 
 ---
 
-## API REST
+## Sistema de Datos (localStorage)
 
-### Endpoints de la API
+### Descripcion General
 
-La API REST consume datos del endpoint base: `https://redsocial.luislepe.tech/api/`
+El proyecto utiliza **localStorage** como sistema de almacenamiento de datos. Esto permite que la aplicacion funcione completamente offline y sin dependencias de un servidor externo.
 
-#### Publicaciones
+### Claves de localStorage
 
-| Metodo | Endpoint | Descripcion | Parametros |
-|--------|----------|-------------|------------|
-| GET | `Publicaciones/all/{idUsuario}` | Obtener todas las publicaciones | `idUsuario` (string) |
-| GET | `Publicaciones/{idUsuario}/{idPublicacion}` | Obtener una publicacion especifica | `idUsuario`, `idPublicacion` (strings) |
-| POST | `Publicaciones` | Crear una publicacion | Body JSON |
-| PUT | `Publicaciones/{idPublicacion}` | Actualizar una publicacion | Body JSON |
-| DELETE | `Publicaciones/{idPublicacion}` | Eliminar una publicacion | Body JSON |
+| Clave | Tipo | Descripcion |
+|-------|------|-------------|
+| `loopify_initialized` | string | Bandera que indica si los datos iniciales han sido cargados |
+| `loopify_publicaciones` | JSON Array | Array de todas las publicaciones |
+| `loopify_comentarios` | JSON Array | Array de todos los comentarios |
+| `loopify_proximoIdPublicacion` | number | Contador para generar IDs unicos de publicaciones |
+| `loopify_proximoIdComentario` | number | Contador para generar IDs unicos de comentarios |
 
-#### Likes
+### Estructura de Datos
 
-| Metodo | Endpoint | Descripcion | Parametros |
-|--------|----------|-------------|------------|
-| GET | `Likes/{idUsuario}/{idFiltro}` | Obtener publicaciones liked | `idUsuario`, `idFiltro` (strings) |
-| POST | `Likes` | Crear un like | Body JSON |
-| DELETE | `Likes` | Eliminar un like | Body JSON |
-
-#### Comentarios
-
-| Metodo | Endpoint | Descripcion | Parametros |
-|--------|----------|-------------|------------|
-| GET | `Comentarios/Publicacion/{idUsuario}/{idPublicacion}` | Obtener comentarios de una publicacion | `idUsuario`, `idPublicacion` (strings) |
-| GET | `Comentarios/{idUsuario}/{idComentario}` | Obtener un comentario especifico | `idUsuario`, `idComentario` (strings) |
-| POST | `Comentarios` | Crear un comentario | Body JSON |
-| PUT | `Comentarios/{idComentario}` | Actualizar un comentario | Body JSON |
-| DELETE | `Comentarios/{idComentario}` | Eliminar un comentario | Body JSON |
-
-### Formato de Datos JSON
-
-#### Publicacion (Request/Response)
-```json
+#### Publicacion
+```javascript
 {
-    "idPublicacion": 123,
-    "idUsuario": "2177709",
-    "nombre": "Uziel Omar Flores Torres",
-    "contenido": "Texto de la publicacion",
-    "fechaPublicacion": "2024-03-15T10:30:00.000Z",
-    "cantidadLikes": 5,
-    "cantidadComentarios": 3,
-    "likePropio": true
+    idPublicacion: 1,           // number - ID unico de la publicacion
+    idUsuario: "2177709",        // string - ID del usuario que creo la publicacion
+    nombre: "Uziel Omar Flores Torres",  // string - Nombre del usuario
+    contenido: "Texto...",        // string - Contenido de la publicacion
+    fechaPublicacion: "2024-03-15T10:30:00.000Z",  // string ISO
+    cantidadLikes: 5,            // number - Numero total de likes
+    cantidadComentarios: 3,       // number - Numero total de comentarios
+    likePropio: true              // boolean - Indica si el usuario actual dio like
 }
 ```
 
-#### Like (Request)
-```json
+#### Comentario
+```javascript
 {
-    "idPublicacion": 123,
-    "idUsuario": "2177709",
-    "llave_Secreta": "5912fdbc-39b0-4071-ba39-71e52e188d78"
+    idComentario: 1,              // number - ID unico del comentario
+    idPublicacion: 1,             // number - ID de la publicacion padre
+    idUsuario: "2177709",         // string - ID del usuario que creo el comentario
+    nombre: "Uziel Omar Flores Torres",  // string - Nombre del usuario
+    contenido: "Texto...",        // string - Contenido del comentario
+    fechaPublicacion: "2024-03-15T11:00:00.000Z",  // string ISO
+    likePropio: false             // boolean - Indica si el usuario actual dio like
 }
 ```
 
-#### Like (Response)
-```json
-{
-    "idLike": 456,
-    "idPublicacion": 123,
-    "idUsuario": "2177709"
-}
+### Datos Iniciales
+
+Cuando la aplicacion se abre por primera vez (o cuando se limpian los datos), se cargan automaticamente datos de ejemplo:
+
+```javascript
+const datosIniciales = {
+    publicaciones: [
+        {
+            idPublicacion: 1,
+            idUsuario: "2177709",
+            nombre: "Uziel Omar Flores Torres",
+            contenido: "Hola a todos! Esta es mi primera publicacion en Loopify...",
+            fechaPublicacion: new Date(Date.now() - 86400000 * 3).toISOString(),
+            cantidadLikes: 12,
+            cantidadComentarios: 3,
+            likePropio: false
+        },
+        // ... mas publicaciones de ejemplo
+    ],
+    comentarios: [
+        {
+            idComentario: 1,
+            idPublicacion: 1,
+            idUsuario: "1234567",
+            nombre: "Maria Gonzalez",
+            contenido: "Bienvenido a Loopify!...",
+            fechaPublicacion: new Date(Date.now() - 86400000 * 2).toISOString(),
+            likePropio: false
+        },
+        // ... mas comentarios de ejemplo
+    ],
+    proximoIdPublicacion: 6,
+    proximoIdComentario: 6
+};
 ```
 
-#### Comentario (Request/Response)
-```json
-{
-    "idComentario": 789,
-    "idPublicacion": 123,
-    "idUsuario": "2177709",
-    "nombre": "Uziel Omar Flores Torres",
-    "contenido": "Texto del comentario",
-    "fechaPublicacion": "2024-03-15T11:00:00.000Z",
-    "likePropio": false
-}
-```
+### Reiniciar Datos
 
-### Codigos de Respuesta HTTP
-
-| Codigo | Significado | Manejo en el Proyecto |
-|--------|-------------|------------------------|
-| 200 | OK | Operacion exitosa |
-| 400 | Bad Request | Publicacion vacia o muy larga (3-500 caracteres) |
-| 401 | Unauthorized | Credenciales invalidas |
-| 429 | Too Many Requests | Rate limit - esperar 1 minuto entre publicaciones |
-| 500 | Internal Server Error | Error del servidor |
+Para restaurar los datos iniciales:
+1. Abre las herramientas de desarrollador (F12)
+2. Ve a la pestana Application > Local Storage
+3. Selecciona el dominio de la aplicacion
+4. Elimina todas las claves que empiecen con `loopify_`
+5. Recarga la pagina
 
 ---
 
-## Modulo de Configuracion
+## Modulo de Configuracion y Datos
 
 ### Ubicacion
-`Scripts/Script general.js` (lineas 1-3)
+`Scripts/Script general.js` (lineas 1-20)
 
 ### Descripcion
-Contiene las variables globales de configuracion utilizadas en todas las paginas.
+Contiene las variables globales de configuracion y las funciones de gestion de datos.
 
 ```javascript
 var matricula = "2177709";
 var llave = "5912fdbc-39b0-4071-ba39-71e52e188d78";
 var dominio = "https://redsocial.luislepe.tech/api/";
+var nombreUsuario = "Uziel Omar Flores Torres";
 ```
 
-### Notas de Implementacion
-- Estas variables se redeclaran en cada script para mantener autonomia
-- Los scripts solo reasignan estas variables si necesitan usarlas
-- La `llave` es un token de autenticacion de la API (no debe exponerse en produccion)
+### Funciones de Gestion de Datos
+
+#### `inicializarDatos()`
+Verifica si los datos ya han sido inicializados. Si no, crea los datos iniciales.
+
+```javascript
+function inicializarDatos()
+```
+
+**Comportamiento:**
+1. Verifica si existe la clave `loopify_initialized`
+2. Si no existe, crea los datos iniciales en localStorage
+3. Marca la inicializacion como completada
+
+---
+
+#### `obtenerPublicaciones()`
+Retorna todas las publicaciones del localStorage.
+
+```javascript
+function obtenerPublicaciones()
+```
+
+**Retorna:** Array de objetos publicacion
+
+---
+
+#### `guardarPublicaciones(publicaciones)`
+Guarda el array de publicaciones en localStorage.
+
+```javascript
+function guardarPublicaciones(publicaciones)
+```
+
+---
+
+#### `obtenerComentarios()`
+Retorna todos los comentarios del localStorage.
+
+```javascript
+function obtenerComentarios()
+```
+
+**Retorna:** Array de objetos comentario
+
+---
+
+#### `guardarComentarios(comentarios)`
+Guarda el array de comentarios en localStorage.
+
+```javascript
+function guardarComentarios(comentarios)
+```
+
+---
+
+#### `obtenerSiguienteIdPublicacion()`
+Genera y retorna un nuevo ID unico para publicaciones.
+
+```javascript
+function obtenerSiguienteIdPublicacion()
+```
+
+**Retorna:** number - Nuevo ID de publicacion
+
+---
+
+#### `obtenerSiguienteIdComentario()`
+Genera y retorna un nuevo ID unico para comentarios.
+
+```javascript
+function obtenerSiguienteIdComentario()
+```
+
+**Retorna:** number - Nuevo ID de comentario
+
+---
+
+#### `simularRetraso()`
+Simula un retraso de red para mejor experiencia de usuario.
+
+```javascript
+function simularRetraso()
+```
+
+**Retorna:** Promise que se resuelve despues de 300-700ms
 
 ---
 
 ## Script General
-
-### Ubicacion
-`Scripts/Script general.js`
-
-### Proposito
-Contiene funciones compartidas y reutilizables usadas en multiples paginas.
-
-### Funciones Principales
-
-#### `editarPublicacion(idPub, nuevoContenido)`
-Edita el contenido de una publicacion existente.
-
-```javascript
-function editarPublicacion(idPub, nuevoContenido)
-```
-
-**Parametros:**
-- `idPub` (string/number): ID de la publicacion a editar
-- `nuevoContenido` (string): Nuevo texto para la publicacion
-
-**Metodo HTTP:** PUT
-**Endpoint:** `dominio + "Publicaciones/" + idPub`
-
-**Cuerpo de la solicitud:**
-```json
-{
-    "idPublicacion": idPub,
-    "idUsuario": matricula,
-    "contenido": nuevoContenido,
-    "llave_Secreta": llave
-}
-```
-
-**Comportamiento:**
-1. Envia solicitud PUT a la API
-2. Si tiene exito, actualiza el DOM directamente
-3. Si falla, muestra SweetAlert con el codigo de error
-
----
-
-#### `eliminarPublicacion(idPub)`
-Elimina una publicacion del servidor y del DOM.
-
-```javascript
-function eliminarPublicacion(idPub)
-```
-
-**Parametros:**
-- `idPub` (string/number): ID de la publicacion a eliminar
-
-**Metodo HTTP:** DELETE
-**Endpoint:** `dominio + "Publicaciones/" + idPub`
-
-**Cuerpo de la solicitud:**
-```json
-{
-    "idPublicacion": idPub,
-    "idUsuario": matricula,
-    "contenido": "a",
-    "llave_Secreta": llave
-}
-```
-
-**Comportamiento:**
-1. Envia solicitud DELETE a la API
-2. Si tiene exito, remueve el elemento del DOM con jQuery
-3. Si falla, muestra SweetAlert con el codigo de error
-
----
-
-#### `crearLike(idPub, botonLike)`
-Crea un like en una publicacion.
-
-```javascript
-function crearLike(idPub, botonLike)
-```
-
-**Parametros:**
-- `idPub` (string/number): ID de la publicacion
-- `botonLike` (jQuery object): Referencia al elemento del boton de like
-
-**Metodo HTTP:** POST
-**Endpoint:** `dominio + "Likes"`
-
-**Cuerpo de la solicitud:**
-```json
-{
-    "idPublicacion": idPub,
-    "idUsuario": matricula,
-    "llave_Secreta": llave
-}
-```
-
-**Comportamiento:**
-1. Incrementa el contador de likes en 1
-2. Cambia el icono de `bi-hand-thumbs-up` a `bi-hand-thumbs-up-fill`
-3. Actualiza el texto del boton
-
----
-
-#### `eliminarLike(idPub, botonLike)`
-Elimina un like de una publicacion.
-
-```javascript
-function eliminarLike(idPub, botonLike)
-```
-
-**Parametros:**
-- `idPub` (string/number): ID de la publicacion
-- `botonLike` (jQuery object): Referencia al elemento del boton de like
-
-**Metodo HTTP:** DELETE
-**Endpoint:** `dominio + "Likes"`
-
-**Comportamiento:**
-1. Decrementa el contador de likes en 1
-2. Cambia el icono de `bi-hand-thumbs-up-fill` a `bi-hand-thumbs-up`
-3. Actualiza el texto del boton
-
----
-
-### Delegacion de Eventos
-
-El script utiliza delegacion de eventos de jQuery para manejar clicks en elementos dinamicos:
-
-```javascript
-$("#Publicaciones").on("click", ".likebtn", function () { ... });
-$("#PublicacionesUsuario").on("click", ".likebtn", function () { ... });
-$("#vistaPublicacion").on("click", ".likebtn", function () { ... });
-```
-
-**Nota:** La delegacion es necesaria porque las publicaciones se cargan dinamicamente despues de que el DOM esta listo.
-
----
-
-### Modales de Edicion y Eliminacion
-
-#### Modal de Edicion
-```javascript
-$("#modalEditar").on("show.bs.modal", function (event) { ... });
-```
-- Captura el contenido actual del textarea de edicion
-- Almacena el ID de publicacion en el boton "Listo"
-
-#### Modal de Eliminacion
-```javascript
-$("#modalEliminar").on("show.bs.modal", function (event) { ... });
-```
-- Almacena el ID de publicacion en el boton "Eliminar"
-
----
-
-## Script Index
 
 ### Ubicacion
 `Scripts/Script index.js`
@@ -1141,20 +1077,191 @@ let fechaTexto = moment(fecha).locale('es').format('L');
 ### No Eliminar Contenido Original
 El README.md contiene informacion del examen original que debe conservarse.
 
-### Compatibilidad con CORS
-El parametro `crossDomain: true` es necesario para permitir peticiones a dominios diferentes.
+### Persistencia de Datos
+- Los datos se guardan en localStorage automaticamente
+- Para reiniciar datos, elimina las claves `loopify_*` en Application > Local Storage del navegador
+- Los datos persisten entre sesiones del navegador
+
+### Compatibilidad con Navegadores
+- localStorage es compatible con todos los navegadores modernos
+- No funciona en modo incognito/private en algunos navegadores con restricciones
+
+### Simulacion de Red
+- Las operaciones tienen un pequeno retraso (300-700ms) para simular latencia de red
+- Esto mejora la experiencia de usuario al mostrar estados de carga
 
 ### Manejo de Estados de Likes
 El estado visual del like se determina por la clase del icono:
 - `bi-hand-thumbs-up`: No liked
 - `bi-hand-thumbs-up-fill`: Liked
 
-### Actualizacion de la API
-Si la API cambia de dominio, actualizar la variable `dominio` en todos los scripts.
+### Migracion a API
+Si deseas migrar a una API REST real, consulta la seccion [Migracion a API REST](#migracion-a-api-rest).
 
 ### Seguridad
-- La `llave` de API no debe exponerse en repositorios publicos
-- Considerar usar variables de entorno en produccion
+- La `llave` de API esta mantenida por compatibilidad pero no se usa en localStorage
+- No exponer informacion sensible en localStorage (no es encryption)
+- Para produccion, considerar usar sessionStorage o variables de entorno
+
+---
+
+## Migracion a API REST
+
+Si deseas migrar este proyecto de localStorage a una API REST real, aqui esta la guia de cambios necesarios.
+
+### 1. Configuracion de la API
+
+Mantener las variables de configuracion:
+
+```javascript
+var matricula = "2177709";
+var llave = "5912fdbc-39b0-4071-ba39-71e52e188d78";
+var dominio = "https://tu-api.com/api/";
+```
+
+### 2. Reemplazar Funciones de localStorage por AJAX
+
+#### Obtener Publicaciones
+```javascript
+// Antes (localStorage)
+function Publicaciones() {
+    let publicaciones = obtenerPublicaciones();
+    // procesar...
+}
+
+// Despues (API)
+function Publicaciones() {
+    $.ajax({
+        url: dominio + "Publicaciones/all/" + matricula,
+        type: 'GET',
+        dataType: 'json',
+        crossDomain: true
+    }).done(function (result) {
+        $(result).each(function (index, pub) {
+            // procesar...
+        });
+    }).fail(function (xhr) {
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudieron cargar las publicaciones. Codigo: " + xhr.status
+        });
+    });
+}
+```
+
+#### Crear Publicacion
+```javascript
+// Antes (localStorage)
+function crearPublicacion() {
+    let publicaciones = obtenerPublicaciones();
+    // agregar y guardar...
+}
+
+// Despues (API)
+function crearPublicacion() {
+    $.ajax({
+        url: dominio + "Publicaciones",
+        type: 'POST',
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        data: JSON.stringify({
+            "idPublicacion": 0,
+            "idUsuario": matricula,
+            "contenido": $("#textopub").val(),
+            "llave_Secreta": llave
+        }),
+        crossDomain: true
+    }).done(function (result) {
+        // recargar publicaciones
+    }).fail(function (xhr) {
+        // manejar error
+    });
+}
+```
+
+### 3. Endpoints de la API
+
+| Operacion | Metodo | Endpoint |
+|-----------|--------|----------|
+| Listar publicaciones | GET | `Publicaciones/all/{idUsuario}` |
+| Ver publicacion | GET | `Publicaciones/{idUsuario}/{idPublicacion}` |
+| Crear publicacion | POST | `Publicaciones` |
+| Editar publicacion | PUT | `Publicaciones/{idPublicacion}` |
+| Eliminar publicacion | DELETE | `Publicaciones/{idPublicacion}` |
+| Crear like | POST | `Likes` |
+| Eliminar like | DELETE | `Likes` |
+| Listar comentarios | GET | `Comentarios/Publicacion/{idUsuario}/{idPublicacion}` |
+| Crear comentario | POST | `Comentarios` |
+| Editar comentario | PUT | `Comentarios/{idComentario}` |
+| Eliminar comentario | DELETE | `Comentarios/{idComentario}` |
+
+### 4. Manejo de Errores HTTP
+
+```javascript
+switch(xhr.status) {
+    case 200:
+        // Exito
+        break;
+    case 400:
+        Swal.fire({
+            icon: "warning",
+            title: "Solicitud invalida",
+            text: "Verifica los datos enviados."
+        });
+        break;
+    case 401:
+        Swal.fire({
+            icon: "error",
+            title: "No autorizado",
+            text: "Credenciales invalidas."
+        });
+        break;
+    case 404:
+        Swal.fire({
+            icon: "warning",
+            title: "No encontrado",
+            text: "El recurso no existe."
+        });
+        break;
+    case 429:
+        Swal.fire({
+            icon: "warning",
+            title: "Demasiadas solicitudes",
+            text: "Espera un momento antes de intentarlo de nuevo."
+        });
+        break;
+    case 500:
+        Swal.fire({
+            icon: "error",
+            title: "Error del servidor",
+            text: "Intenta mas tarde."
+        });
+        break;
+    default:
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Ocurrio un error inesperado. Codigo: " + xhr.status
+        });
+}
+```
+
+### 5. Archivos a Modificar
+
+1. `Scripts/Script general.js` - Reemplazar funciones de localStorage por AJAX
+2. `Scripts/Script index.js` - Actualizar llamadas a funciones
+3. `Scripts/Script mi perfil posts.js` - Actualizar llamadas a funciones
+4. `Scripts/Script mi perfil - me gusta posts.js` - Actualizar llamadas a funciones
+5. `Scripts/Script vista-publicacion.js` - Actualizar llamadas a funciones
+
+### 6. Pruebas
+
+Despues de la migracion:
+1. Verificar que todas las operaciones CRUD funcionen correctamente
+2. Probar manejo de errores con diferentes codigos de respuesta
+3. Verificar CORS si la API esta en un dominio diferente
+4. Probar en diferentes navegadores
 
 ---
 
@@ -1165,3 +1272,4 @@ Si la API cambia de dominio, actualizar la variable `dominio` en todos los scrip
 - [Documentacion de SweetAlert2](https://sweetalert2.github.io/)
 - [Documentacion de Moment.js](https://momentjs.com/docs/)
 - [Bootstrap Icons](https://icons.getbootstrap.com/)
+- [API REST Guide](https://restfulapi.net/)

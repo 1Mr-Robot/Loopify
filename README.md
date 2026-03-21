@@ -1,10 +1,6 @@
 # Loopify
 
-Este es el examen de medio curso de Uziel Omar Flores Torres para la materia "Programación web".
-
-Este proyecto consiste en una mi red social que consume de una API creada por el profesor Luis Daniel Lepe Rodriguez.
-
-Actualmente la API se encuentra cerrada y ya no se puede acceder más.
+Este es el examen de medio curso de Uziel Omar Flores Torres para la materia "Programacion web".
 
 ---
 
@@ -20,7 +16,7 @@ Actualmente la API se encuentra cerrada y ya no se puede acceder más.
 
 Loopify es una mini red social estilo Feed de publicaciones desarrollada como proyecto academico para la materia de Programacion Web. La aplicacion permite a los usuarios crear, editar y eliminar publicaciones, asi como interactuar con ellas mediante un sistema de likes y comentarios.
 
-El proyecto fue desarrollado utilizando tecnologias web del lado del cliente (HTML, CSS, JavaScript) y consume una API REST externa proporcionada por el profesor Luis Daniel Lepe Rodriguez.
+> **Nota:** La API externa original proporcionada por el profesor Luis Daniel Lepe Rodriguez ya no esta disponible. Esta version (rama `demo`) ha sido modificada para funcionar con datos estaticos almacenados en localStorage, permitiendo simular todas las funcionalidades de la red social sin necesidad de un servidor.
 
 ---
 
@@ -29,10 +25,11 @@ El proyecto fue desarrollado utilizando tecnologias web del lado del cliente (HT
 El proposito de este proyecto es aplicar los conocimientos adquiridos durante el semestre en la materia de Programacion Web, incluyendo:
 
 - Desarrollo de interfaces web responsivas y atractivas
-- Consumo de APIs REST mediante AJAX
 - Manipulacion dinamica del DOM
+- Gestion de datos con localStorage
 - Gestion de eventos e interactividad
 - Implementacion de patrones de diseno de interfaces de usuario
+- Simulacion de operaciones CRUD (Create, Read, Update, Delete)
 
 ---
 
@@ -72,6 +69,7 @@ El proposito de este proyecto es aplicar los conocimientos adquiridos durante el
 - **Sistema de comentarios:** Los usuarios pueden comentar en cualquier publicacion
 - **Validacion de formularios:** Validacion del lado del cliente para todos los formularios
 - **Notificaciones de error:** Uso de SweetAlert2 para mostrar mensajes de error amigables
+- **Persistencia de datos:** Los datos se guardan en localStorage y persisten entre sesiones
 
 ---
 
@@ -80,63 +78,84 @@ El proposito de este proyecto es aplicar los conocimientos adquiridos durante el
 ### Patron de Diseno
 El proyecto sigue un patron de arquitectura MVC (Modelo-Vista-Controlador) simplificado en el lado del cliente:
 
-- **Modelo:** Datos y logica de negocio contenidos en los scripts JavaScript
+- **Modelo:** Datos y logica de negocio contenidos en los scripts JavaScript (datos en localStorage)
 - **Vista:** Archivos HTML que definen la estructura y contenido de cada pagina
-- **Controlador:** Scripts JavaScript que gestionan la logica de interactividad y comunicacion con la API
+- **Controlador:** Scripts JavaScript que gestionan la logica de interactividad y manipulacion de datos
+
+### Sistema de Datos
+
+El proyecto utiliza **localStorage** para almacenar y persistir los datos:
+
+| Clave localStorage | Descripcion |
+|--------------------|-------------|
+| `loopify_initialized` | Bandera que indica si los datos iniciales han sido cargados |
+| `loopify_publicaciones` | Array JSON de todas las publicaciones |
+| `loopify_comentarios` | Array JSON de todos los comentarios |
+| `loopify_proximoIdPublicacion` | Contador para generar IDs unicos de publicaciones |
+| `loopify_proximoIdComentario` | Contador para generar IDs unicos de comentarios |
 
 ### Estructura de Archivos
 
 ```
 Loopify/
 |
-|-- index.html                 # Pagina principal - Feed de publicaciones
-|-- mi perfil.html             # Perfil del usuario con sus publicaciones
-|-- mi perfil - informacion.html    # Informacion personal del usuario
-|-- mi perfil - me gusta.html        # Publicaciones liked por el usuario
-|-- vista-publicacion.html     # Vista detallada de una publicacion
+|-- index.html                              # Pagina principal - Feed de publicaciones
+|-- mi perfil.html                          # Perfil del usuario con sus publicaciones
+|-- mi perfil - informacion.html            # Informacion personal del usuario
+|-- mi perfil - me gusta.html               # Publicaciones liked por el usuario
+|-- vista-publicacion.html                  # Vista detallada de una publicacion
 |
 |-- Scripts/
-|   |-- Script general.js      # Funciones compartidas (likes, editar, eliminar)
-|   |-- Script index.js        # Logica de la pagina de inicio
-|   |-- Script mi perfil.js    # Logica de la pagina de perfil
-|   |-- Script mi perfil posts.js    # Logica de publicaciones en perfil
-|   |-- Script mi perfil - me gusta posts.js    # Logica de likes
-|   |-- Script vista-publicacion.js   # Logica de vista de publicacion
+|   |-- Script general.js                   # Sistema de datos y funciones compartidas
+|   |-- Script index.js                     # Logica de la pagina de inicio
+|   |-- Script mi perfil.js                 # Logica de la pagina de perfil (responsive)
+|   |-- Script mi perfil posts.js           # Logica de publicaciones en perfil
+|   |-- Script mi perfil - me gusta posts.js # Logica de seccion de likes
+|   |-- Script vista-publicacion.js         # Logica de vista de publicacion
 |
 |-- Styles/
-|   |-- Style.css               # Estilos CSS personalizados
+|   |-- Style.css                           # Estilos CSS personalizados
 |
 |-- Imagenes/
-|   |-- Logo.png                # Logo principal de Loopify
-|   |-- Logo icono.png          # Icono del logo
-|   |-- Foto portada.jpg        # Imagen de portada del perfil
-|   |-- Perfil - Uziel Omar Flores Torres.png   # Foto de perfil
+|   |-- Logo.png                            # Logo principal de Loopify
+|   |-- Logo icono.png                      # Icono del logo
+|   |-- Foto portada.jpg                    # Imagen de portada del perfil
+|   |-- Perfil - Uziel Omar Flores Torres.png  # Foto de perfil del usuario
+|   |-- Perfil.png                          # Foto generica para otros usuarios
 |
-|-- README.md                  # Documentacion del proyecto
-|-- LICENSE                    # Licencia del proyecto
+|-- README.md                              # Documentacion del proyecto
+|-- CONTRIBUTING.md                        # Guia tecnica del proyecto
+|-- LICENSE                                # Licencia del proyecto
 ```
 
-### Comunicacion con la API
+### Modelo de Datos
 
-El proyecto se comunica con una API REST externa mediante AJAX (jQuery). La configuracion de la API se encuentra en `Scripts/Script general.js`:
-
+#### Publicacion
 ```javascript
-var matricula = "2177709";
-var llave = "5912fdbc-39b0-4071-ba39-71e52e188d78";
-var dominio = "https://redsocial.luislepe.tech/api/";
+{
+    idPublicacion: 1,
+    idUsuario: "2177709",
+    nombre: "Uziel Omar Flores Torres",
+    contenido: "Texto de la publicacion",
+    fechaPublicacion: "2024-03-15T10:30:00.000Z",
+    cantidadLikes: 5,
+    cantidadComentarios: 3,
+    likePropio: true
+}
 ```
 
-La API soporta las siguientes operaciones:
-
-| Metodo | Endpoint | Descripcion |
-|--------|----------|-------------|
-| GET | Publicaciones | Obtener todas las publicaciones |
-| GET | Publicaciones/{id} | Obtener una publicacion especifica |
-| POST | Publicaciones | Crear una nueva publicacion |
-| PUT | Publicaciones/{id} | Actualizar una publicacion |
-| DELETE | Publicaciones/{id} | Eliminar una publicacion |
-| POST | Likes | Crear un like |
-| DELETE | Likes | Eliminar un like |
+#### Comentario
+```javascript
+{
+    idComentario: 1,
+    idPublicacion: 1,
+    idUsuario: "2177709",
+    nombre: "Uziel Omar Flores Torres",
+    contenido: "Texto del comentario",
+    fechaPublicacion: "2024-03-15T11:00:00.000Z",
+    likePropio: false
+}
+```
 
 ---
 
@@ -149,18 +168,18 @@ La API soporta las siguientes operaciones:
 
 ### Frameworks y Librerias
 - **Bootstrap 5.3.3:** Framework CSS para diseno responsivo y componentes UI
-- **Bootstrap Icons:** Biblioteca de iconos basada en Bootstrap
-- **jQuery 3.7.1:** Libreria JavaScript para manipulacion del DOM y AJAX
+- **Bootstrap Icons:** Biblioteca de iconos vectoriales
+- **jQuery 3.7.1:** Libreria JavaScript para manipulacion del DOM y eventos
 - **Moment.js 2.29.1:** Libreria para manipulacion y formateo de fechas
-- **SweetAlert2:** Libreria para ventanas de alertas personalizadas y atractivas
+- **SweetAlert2:** Libreria para ventanas de alertas personalizadas
+
+### Almacenamiento
+- **localStorage:** API de almacenamiento web para persistencia de datos en el navegador
 
 ### Herramientas de Desarrollo
 - **Visual Studio Code:** Editor de codigo fuente
 - **Git:** Sistema de control de versiones
 - **GitHub:** Plataforma de alojamiento de codigo
-
-### APIs Externas
-- **Red Social API:** API REST proporcionada por el profesor Luis Daniel Lepe Rodriguez (actualmente fuera de servicio)
 
 ---
 
@@ -168,14 +187,18 @@ La API soporta las siguientes operaciones:
 
 ### Para Ejecutar el Proyecto
 - Un navegador web moderno (Chrome, Firefox, Edge, Safari)
-- Conexion a internet (para cargar librerias CDN y consumir la API)
-- Servidor web local (opcional, para mejor compatibilidad con CORS)
+- Conexion a internet (para cargar librerias CDN)
+- Servidor web local (opcional, para mejor compatibilidad)
 
 ### Navegadores Soportados
 - Google Chrome (ultima version)
 - Mozilla Firefox (ultima version)
 - Microsoft Edge (ultima version)
 - Safari (ultima version)
+
+### Requisitos de Almacenamiento
+- El navegador debe tener habilitada la opcion de localStorage
+- Se recomienda no limpiar los datos del sitio para mantener las publicaciones
 
 ---
 
@@ -186,23 +209,40 @@ La API soporta las siguientes operaciones:
    git clone https://github.com/1Mr-Robot/Loopify.git
    ```
 
-2. **Abrir el proyecto:**
+2. **Cambiar a la rama demo:**
+   ```bash
+   git checkout demo
+   ```
+
+3. **Abrir el proyecto:**
    - Opcion A: Abrir `index.html` directamente en el navegador
    - Opcion B: Usar un servidor local como Live Server en VS Code
 
-3. **Navegar por la aplicacion:**
-   - Pagina de inicio: Ver el feed de publicaciones
-   - Perfil: Ver y gestionar publicaciones propias
-   - Tu informacion: Ver datos personales
-   - Tus me gusta: Ver publicaciones liked
+4. **Explorar la aplicacion:**
+   - Al abrir la pagina por primera vez, se cargaran datos de ejemplo automaticamente
+   - Puedes crear nuevas publicaciones, dar likes y escribir comentarios
+   - Todos los cambios se guardan automaticamente en localStorage
+
+---
+
+## Diferencias con la Version Original (API)
+
+| Caracteristica | Version Original (API) | Version Demo (localStorage) |
+|----------------|------------------------|----------------------------|
+| Fuente de datos | API REST externa | localStorage del navegador |
+| Persistencia | Servidor | Navegador del usuario |
+| Usuarios multiples | Si | No (un solo usuario simulado) |
+| Operacion offline | No | Si |
+| Dependencias externas | API del profesor | Solo CDN de librerias |
 
 ---
 
 ## Notas Importantes
 
-- **Estado de la API:** La API externa proporcionada por el profesor esta actualmente fuera de servicio. El proyecto funciona correctamente pero no puede realizar operaciones con el servidor.
-- **Datos de prueba:** Los datos mostrados son datos estáticos para mostrar el funcionamiento del proyecto.
+- **Datos iniciales:** Al abrir la aplicacion por primera vez, se cargan automaticamente datos de ejemplo con 5 publicaciones y 5 comentarios de prueba.
+- **Reiniciar datos:** Para restaurar los datos iniciales, abre las herramientas de desarrollador (F12), ve a Application > Local Storage, y elimina todas las claves que empiecen con `loopify_`.
 - **Tema oscuro:** La aplicacion utiliza un tema oscuro por defecto para una mejor experiencia visual.
+- **Simulacion de retraso:** Las operaciones CRUD tienen un pequeno retraso artificial (300-700ms) para simular la latencia de red y mostrar estados de carga.
 
 ---
 

@@ -1,220 +1,193 @@
-var matricula = "2177709";
-var llave = "5912fdbc-39b0-4071-ba39-71e52e188d78"
-var dominio = "https://redsocial.luislepe.tech/api/"
-
-function PublicacionesUsuario() {
-    $.ajax({
-        url: dominio + "Publicaciones/all/" + matricula + "/" + matricula,
-        type: 'GET',
-        dataType: 'json',
-        crossDomain: true
-    }).done(function (result) {
-        $(result).each(function (index, publicacionresponse) {
-            let tipoLike = ""
-            let foto = ""
-            let espOp = ""
-            let opciones = ""
-            let contenido = publicacionresponse.contenido.replace(/\n/g, '<br>')
-            let fecha = publicacionresponse.fechaPublicacion
-            let fehcaTexto = moment(fecha).locale('es').format('L')
-            if (publicacionresponse.likePropio) {
-                tipoLike = `<i class="bi bi-hand-thumbs-up-fill me-1"></i>` 
-            } else {
-                tipoLike = `<i class="bi bi-hand-thumbs-up me-1"></i>` 
-            }
-            if (publicacionresponse.idUsuario == "2177709") {
-                foto = "Imagenes/Perfil - Uziel Omar Flores Torres.png"
-                espOp = "me-5"
-                opciones = `
-                    <div class="dropdown position-absolute top-0 end-0 p-2">
-                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-gear-fill"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id-publicacion="${publicacionresponse.idPublicacion}" data-contenido="${publicacionresponse.contenido}"><i class="bi bi-pencil-square me-1"></i>Editar</a></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id-publicacion="${publicacionresponse.idPublicacion}"><i class="bi bi-trash me-1"></i></i>Eliminar</a></li>
-                        </ul>
-                    </div>
-                `
-            } else {
-                foto = "Imagenes/Perfil.png"
-            }
-            let publicacion = `
-                <div class="card mb-3 clrtar" id="publicacion-${publicacionresponse.idPublicacion}">
-                    <div class="card-body">
-                        <div class="d-flex mb-3">
-                            <img src="${foto}" alt="Perfil" class="border border-secondary border-3 rounded-circle" height="60">
-                            <div class="ps-3">
-                                <h5 class="card-title ${espOp}">${publicacionresponse.nombre}</h5>
-                                <h6 class="card-subtitle mb-1 text-body-secondary">${publicacionresponse.idUsuario}</h6>
-                                <p class="small text-body-secondary">Publicación #${publicacionresponse.idPublicacion}, ${fehcaTexto}</p>
-                            </div>
-                        </div>
-                        ${opciones}
-                        <p class="card-text">${contenido}</p>
-                    </div>
-                    <div class="card-footer text-body-secondary text-center">
-                        <div class="btn-group w-100" role="group" aria-label="Basic outlined example">
-                            <button type="button" class="btn likebtn" data-id-publicacion="${publicacionresponse.idPublicacion}">
-                                ${tipoLike}${publicacionresponse.cantidadLikes} Me gusta
-                            </button>
-                            <button type="button" class="btn combtn" data-id-publicacion="${publicacionresponse.idPublicacion}" onclick="window.location.href='vista publicacion.html';">
-                                <i class="bi bi-chat-left me-1"></i>${publicacionresponse.cantidadComentarios} Comentarios
-                            </button>
-                        </div>
+function generarHTMLPublicacionPerfil(publicacionresponse, contenedor) {
+    let tipoLike = publicacionresponse.likePropio ? 
+        `<i class="bi bi-hand-thumbs-up-fill me-1"></i>` : 
+        `<i class="bi bi-hand-thumbs-up me-1"></i>`;
+    let foto = "Imagenes/Perfil - Uziel Omar Flores Torres.png";
+    let espOp = "me-5";
+    let opciones = `
+        <div class="dropdown position-absolute top-0 end-0 p-2">
+            <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-gear-fill"></i>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id-publicacion="${publicacionresponse.idPublicacion}" data-contenido="${publicacionresponse.contenido}"><i class="bi bi-pencil-square me-1"></i>Editar</a></li>
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id-publicacion="${publicacionresponse.idPublicacion}"><i class="bi bi-trash me-1"></i></i>Eliminar</a></li>
+            </ul>
+        </div>
+    `;
+    let contenido = publicacionresponse.contenido.replace(/\n/g, '<br>');
+    let fecha = publicacionresponse.fechaPublicacion;
+    let fechaTexto = moment(fecha).locale('es').format('L');
+    
+    let publicacion = `
+        <div class="card mb-3 clrtar" id="publicacion-${publicacionresponse.idPublicacion}">
+            <div class="card-body">
+                <div class="d-flex mb-3">
+                    <img src="${foto}" alt="Perfil" class="border border-secondary border-3 rounded-circle" height="60">
+                    <div class="ps-3">
+                        <h5 class="card-title ${espOp}">${publicacionresponse.nombre}</h5>
+                        <h6 class="card-subtitle mb-1 text-body-secondary">${publicacionresponse.idUsuario}</h6>
+                        <p class="small text-body-secondary">Publicacion #${publicacionresponse.idPublicacion}, ${fechaTexto}</p>
                     </div>
                 </div>
-            `
-            $("#PublicacionesUsuario").append(publicacion)
-        })
-        console.log(result)
-    }).fail(function (xhr, status, error) {
-        let codigoRespuesta = xhr.status
-        Swal.fire({
-            icon: "error",
-            title: "Vaya, parece que hubo un error",
-            text: "Tuvimos problemas cargando las publicaciones, intentalo de nuevo mas tarde. Codigo de respuesta: " + codigoRespuesta
-        })
-    })
+                ${opciones}
+                <p class="card-text">${contenido}</p>
+            </div>
+            <div class="card-footer text-body-secondary text-center">
+                <div class="btn-group w-100" role="group" aria-label="Basic outlined example">
+                    <button type="button" class="btn likebtn" data-id-publicacion="${publicacionresponse.idPublicacion}">
+                        ${tipoLike}${publicacionresponse.cantidadLikes} Me gusta
+                    </button>
+                    <button type="button" class="btn combtn" data-id-publicacion="${publicacionresponse.idPublicacion}">
+                        <i class="bi bi-chat-left me-1"></i>${publicacionresponse.cantidadComentarios} Comentarios
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    if (contenedor === "prepend") {
+        $("#PublicacionesUsuario").prepend(publicacion);
+    } else {
+        $("#PublicacionesUsuario").append(publicacion);
+    }
+}
+
+function actualizarContadorComentarios(idPub) {
+    let comentarios = obtenerComentarios();
+    let cantidad = comentarios.filter(c => c.idPublicacion == idPub).length;
+    
+    let publicaciones = obtenerPublicaciones();
+    let pubIndex = publicaciones.findIndex(p => p.idPublicacion == idPub);
+    if (pubIndex !== -1) {
+        publicaciones[pubIndex].cantidadComentarios = cantidad;
+        guardarPublicaciones(publicaciones);
+    }
+    
+    let btn = $(`.combtn[data-id-publicacion="${idPub}"]`);
+    if (btn.length) {
+        btn.html(`<i class="bi bi-chat-left me-1"></i> ${cantidad} Comentarios`);
+    }
+}
+
+function PublicacionesUsuario() {
+    $("#PublicacionesUsuario").empty();
+    
+    let publicaciones = obtenerPublicaciones();
+    let publicacionesUsuario = publicaciones
+        .filter(p => p.idUsuario === matricula)
+        .sort((a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion));
+    
+    $(publicacionesUsuario).each(function (index, publicacionresponse) {
+        generarHTMLPublicacionPerfil(publicacionresponse, "append");
+    });
+    
+    if (publicacionesUsuario.length === 0) {
+        $("#PublicacionesUsuario").html(`
+            <div class="card mb-3 clrtar">
+                <div class="card-body text-center">
+                    <i class="bi bi-camera fs-1 text-body-secondary"></i>
+                    <h5 class="mt-3">No has publicado nada</h5>
+                    <p class="text-body-secondary">Comparte tus pensamientos en el inicio!</p>
+                </div>
+            </div>
+        `);
+    }
 }
 
 function PublicacionNueva(idPub) {
-    $.ajax({
-        url: dominio + "Publicaciones/" + matricula + "/" + idPub,
-        type: 'GET',
-        dataType: 'json',
-        crossDomain: true
-    }).done(function (result) {
-        $(result).each(function (index, publicacionresponse) {
-            let tipoLike = ""
-            let foto = ""
-            let espOp = ""
-            let opciones = ""
-            let contenido = publicacionresponse.contenido.replace(/\n/g, '<br>')
-            let fecha = publicacionresponse.fechaPublicacion
-            let fehcaTexto = moment(fecha).locale('es').format('L')
-            if (publicacionresponse.likePropio) {
-                tipoLike = `<i class="bi bi-hand-thumbs-up-fill me-1"></i>` 
-            } else {
-                tipoLike = `<i class="bi bi-hand-thumbs-up me-1"></i>` 
-            }
-            if (publicacionresponse.idUsuario == "2177709") {
-                foto = "Imagenes/Perfil - Uziel Omar Flores Torres.png"
-                espOp = "me-5"
-                opciones = `
-                    <div class="dropdown position-absolute top-0 end-0 p-2">
-                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-gear-fill"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEditar" data-id-publicacion="${publicacionresponse.idPublicacion}" data-contenido="${publicacionresponse.contenido}"><i class="bi bi-pencil-square me-1"></i>Editar</a></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEliminar" data-id-publicacion="${publicacionresponse.idPublicacion}"><i class="bi bi-trash me-1"></i></i>Eliminar</a></li>
-                        </ul>
-                    </div>
-                `
-            } else {
-                foto = "Imagenes/Perfil.png"
-            }
-            let publicacion = `
-                <div class="card mb-3 clrtar" id="publicacion-${publicacionresponse.idPublicacion}">
-                    <div class="card-body">
-                        <div class="d-flex mb-3">
-                            <img src="${foto}" alt="Perfil" class="border border-secondary border-3 rounded-circle" height="60">
-                            <div class="ps-3">
-                                <h5 class="card-title ${espOp}">${publicacionresponse.nombre}</h5>
-                                <h6 class="card-subtitle mb-1 text-body-secondary">${publicacionresponse.idUsuario}</h6>
-                                <p class="small text-body-secondary">Publicación #${publicacionresponse.idPublicacion}, ${fehcaTexto}</p>
-                            </div>
-                        </div>
-                        ${opciones}
-                        <p class="card-text">${contenido}</p>
-                    </div>
-                    <div class="card-footer text-body-secondary text-center">
-                        <div class="btn-group w-100" role="group" aria-label="Basic outlined example">
-                            <button type="button" class="btn likebtn" data-id-publicacion="${publicacionresponse.idPublicacion}">
-                                ${tipoLike}${publicacionresponse.cantidadLikes} Me gusta
-                            </button>
-                            <button type="button" class="btn combtn" data-id-publicacion="${publicacionresponse.idPublicacion}">
-                                <i class="bi bi-chat-left me-1"></i>${publicacionresponse.cantidadComentarios} Comentarios
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `
-            $("#PublicacionesUsuario").prepend(publicacion)
-        })
-        console.log(result)
-    }).fail(function (xhr, status, error) {
-        let codigoRespuesta = xhr.status
-        Swal.fire({
-            icon: "error",
-            title: "Vaya, parece que hubo un error",
-            text: "Tuvimos problemas cargando la nueva publicación. Codigo de respuesta: " + codigoRespuesta
-        })
-    })
+    let publicaciones = obtenerPublicaciones();
+    let publicacion = publicaciones.find(p => p.idPublicacion == idPub);
+    
+    if (publicacion && publicacion.idUsuario === matricula) {
+        generarHTMLPublicacionPerfil(publicacion, "prepend");
+    }
 }
 
 function crearPublicacion() {
-    $.ajax({
-        url: dominio + "Publicaciones",
-        type: 'POST',
-        contentType: "application/json; charset=utf-8",
-        dataType: 'json',
-        data: JSON.stringify({
-            "idPublicacion": 0,
-            "idUsuario": matricula,
-            "contenido": $("#textopub").val(),
-            "llave_Secreta": llave
-        }),
-        crossDomain: true
-    }).done(function (result) {
-        let idPub = result.idPublicacion
-        document.getElementById("textopub").value = ""
-        PublicacionNueva(idPub)
-        console.log(result)
-    }).fail(function (xhr, status, error) {
-        let codigoRespuesta = xhr.status
+    let contenido = $("#textopub").val().trim();
+    
+    if (contenido.length < 3) {
         Swal.fire({
-            icon: "error",
-            title: "Vaya, parece que hubo un error",
-            text: "Tuvimos problemas creando esa publicación. Codigo de respuesta: " + codigoRespuesta
-        })
-    })
+            icon: "warning",
+            title: "Ups, no podemos publicar eso",
+            text: "Verifica que tu publicacion sea mayor que tres caracteres."
+        });
+        return;
+    }
+    
+    if (contenido.length > 500) {
+        Swal.fire({
+            icon: "warning",
+            title: "Ups, no podemos publicar eso",
+            text: "Tu publicacion no puede exceder los 500 caracteres."
+        });
+        return;
+    }
+    
+    let publicaciones = obtenerPublicaciones();
+    let nuevoId = obtenerSiguienteIdPublicacion();
+    
+    let nuevaPublicacion = {
+        idPublicacion: nuevoId,
+        idUsuario: matricula,
+        nombre: nombreUsuario,
+        contenido: contenido,
+        fechaPublicacion: new Date().toISOString(),
+        cantidadLikes: 0,
+        cantidadComentarios: 0,
+        likePropio: false
+    };
+    
+    publicaciones.unshift(nuevaPublicacion);
+    guardarPublicaciones(publicaciones);
+    
+    document.getElementById("textopub").value = "";
+    PublicacionNueva(nuevoId);
+    
+    Swal.fire({
+        icon: "success",
+        title: "Publicado!",
+        text: "Tu publicacion se ha creado exitosamente.",
+        timer: 1500,
+        showConfirmButton: false
+    });
 }
 
 $("#publicar").submit(function (event) {
     if (!this.checkValidity()) {
-        event.preventDefault()
-        event.stopPropagation()
+        event.preventDefault();
+        event.stopPropagation();
     } else {
-        crearPublicacion()
-        event.preventDefault()
+        crearPublicacion();
+        event.preventDefault();
     }
-    this.classList.add('was-validated')
-})
+    this.classList.add('was-validated');
+});
 
 $("#PublicacionesUsuario").on("click", ".combtn", function () {
-    let idPub = $(this).data("id-publicacion")
-    localStorage.setItem("idPub", idPub)
-    window.location.href = "vista-publicacion.html"
-})
+    let idPub = $(this).data("id-publicacion");
+    localStorage.setItem("idPub", idPub);
+    window.location.href = "vista-publicacion.html";
+});
 
-const texto = document.getElementById("textopub")
-const editar = document.getElementById("message-text")
-const altmax = 300
+const texto = document.getElementById("textopub");
+const editar = document.getElementById("message-text");
+const altmax = 300;
 
 texto.addEventListener("input", function() {
-    this.style.height = "auto"
-    let nuevaAlt = Math.min(this.scrollHeight, altmax)
-    this.style.height = nuevaAlt + "px"
-})
+    this.style.height = "auto";
+    let nuevaAlt = Math.min(this.scrollHeight, altmax);
+    this.style.height = nuevaAlt + "px";
+});
 
 editar.addEventListener("input", function() {
-    this.style.height = "auto"
-    let nuevaAlta = Math.min(this.scrollHeight, altmax)
-    this.style.height = nuevaAlta + "px"
-})
+    this.style.height = "auto";
+    let nuevaAlta = Math.min(this.scrollHeight, altmax);
+    this.style.height = nuevaAlta + "px";
+});
 
 $(document).ready(function () {
-    PublicacionesUsuario()
-})
+    inicializarDatos();
+    PublicacionesUsuario();
+});
