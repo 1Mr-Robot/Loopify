@@ -3,7 +3,7 @@ function generarHTMLPublicacionVista(publicacionresponse) {
         `<i class="bi bi-hand-thumbs-up-fill me-1"></i>` : 
         `<i class="bi bi-hand-thumbs-up me-1"></i>`;
     let foto = publicacionresponse.idUsuario == "2177709" ? 
-        "Imagenes/Perfil - Uziel Omar Flores Torres.png" : 
+        "Imagenes/Perfil-Uziel-Omar-Flores-Torres.png" : 
         "Imagenes/Perfil.png";
     let espOp = publicacionresponse.idUsuario == "2177709" ? "me-5" : "";
     let opciones = publicacionresponse.idUsuario == "2177709" ? `
@@ -55,7 +55,7 @@ function generarHTMLPublicacionVista(publicacionresponse) {
 
 function generarHTMLComentario(publicacionresponse) {
     let foto = publicacionresponse.idUsuario == "2177709" ? 
-        "Imagenes/Perfil - Uziel Omar Flores Torres.png" : 
+        "Imagenes/Perfil-Uziel-Omar-Flores-Torres.png" : 
         "Imagenes/Perfil.png";
     let espOp = publicacionresponse.idUsuario == "2177709" ? "me-5" : "";
     let opciones = publicacionresponse.idUsuario == "2177709" ? `

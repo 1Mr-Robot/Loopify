@@ -20,7 +20,7 @@ Este documento contiene toda la informacion tecnica necesaria para entender, mod
 8. [Script Mi Perfil](#script-mi-perfil)
 9. [Script Mi Perfil Posts](#script-mi-perfil-posts)
 10. [Script Mi Perfil Me Gusta Posts](#script-mi-perfil-me-gusta-posts)
-11. [Script Vista Publicacion](#script-vista-publicacion)
+11. [Script Vista Publicacion](#script-publicacion)
 12. [Estructura HTML](#estructura-html)
 13. [Estilos CSS](#estilos-css)
 14. [Comunicacion entre Paginas](#comunicacion-entre-paginas)
@@ -79,38 +79,38 @@ var nombreUsuario = "Uziel Omar Flores Torres";
 Loopify/
 |
 |-- index.html                      # Pagina principal - Feed de publicaciones
-|                                     # Carga: Script general.js, Script index.js
+|                                     # Carga: Script general.js, Script-index.js
 |
-|-- mi perfil.html                   # Perfil del usuario
-|                                     # Carga: Script general.js, Script mi perfil posts.js,
-|                                     #         Script mi perfil.js
+|-- mi-perfil.html                   # Perfil del usuario
+|                                     # Carga: Script general.js, Script-mi-perfil-posts.js,
+|                                     #         Script-mi-perfil.js
 |
-|-- mi perfil - informacion.html     # Informacion del perfil (estatica)
+|-- mi-perfil-informacion.html     # Informacion del perfil (estatica)
 |
-|-- mi perfil - me gusta.html        # Lista de publicaciones liked
+|-- mi-perfil-me-gusta.html        # Lista de publicaciones liked
 |                                     # Carga: Script general.js,
-|                                     #         Script mi perfil - me gusta posts.js
+|                                     #         Script-mi-perfil-me-gusta-posts.js
 |
-|-- vista-publicacion.html           # Vista detallada de publicacion
+|-- publicacion.html                  # Vista detallada de publicacion
 |                                     # Carga: Script general.js,
-|                                     #         Script vista-publicacion.js
+|                                     #         Script-publicacion.js
 |
 |-- Scripts/
 |   |-- Script general.js            # Funciones compartidas (CRUD likes, editar, eliminar)
-|   |-- Script index.js              # Logica del feed principal
-|   |-- Script mi perfil.js          # Logica de ajuste responsivo del perfil
-|   |-- Script mi perfil posts.js    # Logica de publicaciones del perfil
-|   |-- Script mi perfil - me gusta posts.js  # Logica de seccion likes
-|   |-- Script vista-publicacion.js # Logica de vista de publicacion y comentarios
+|   |-- Script-index.js              # Logica del feed principal
+|   |-- Script-mi-perfil.js          # Logica de ajuste responsivo del perfil
+|   |-- Script-mi-perfil-posts.js    # Logica de publicaciones del perfil
+|   |-- Script-mi-perfil-me-gusta-posts.js  # Logica de seccion likes
+|   |-- Script-publicacion.js # Logica de vista de publicacion y comentarios
 |
 |-- Styles/
 |   |-- Style.css                    # Estilos personalizados globales
 |
 |-- Imagenes/                        # Recursos graficos
 |   |-- Logo.png                     # Logo principal
-|   |-- Logo icono.png               # Icono del logo (favicon)
-|   |-- Foto portada.jpg             # Imagen de portada
-|   |-- Perfil - Uziel Omar Flores Torres.png  # Foto de perfil del usuario
+|   |-- Logo-icono.png               # Icono del logo (favicon)
+|   |-- Foto-portada.jpg             # Imagen de portada
+|   |-- Perfil-Uziel-Omar-Flores-Torres.png  # Foto de perfil del usuario
 |   |-- Perfil.png                   # Foto de perfil generica (otros usuarios)
 |
 |-- README.md                        # Documentacion general
@@ -349,7 +349,7 @@ function simularRetraso()
 ## Script General
 
 ### Ubicacion
-`Scripts/Script index.js`
+`Scripts/Script-index.js`
 
 ### Proposito
 Controla la funcionalidad de la pagina principal (feed de publicaciones).
@@ -436,7 +436,7 @@ $("#publicar").submit(function (event) { ... });
 $("#Publicaciones").on("click", ".combtn", function () { ... });
 ```
 
-Al hacer clic en "Comentarios", almacena el ID de publicacion en `localStorage` y redirige a `vista-publicacion.html`.
+Al hacer clic en "Comentarios", almacena el ID de publicacion en `localStorage` y redirige a `publicacion.html`.
 
 ---
 
@@ -457,7 +457,7 @@ texto.addEventListener("input", function() {
 ## Script Mi Perfil
 
 ### Ubicacion
-`Scripts/Script mi perfil.js`
+`Scripts/Script-mi-perfil.js`
 
 ### Proposito
 Maneja el ajuste responsivo de elementos del perfil cuando cambia el tamano de la ventana.
@@ -490,7 +490,7 @@ ajustarCosas(); // Ejecucion inicial
 ## Script Mi Perfil Posts
 
 ### Ubicacion
-`Scripts/Script mi perfil posts.js`
+`Scripts/Script-mi-perfil-posts.js`
 
 ### Proposito
 Carga las publicaciones del usuario actual en su perfil.
@@ -519,7 +519,7 @@ Similar a Script index.js pero sin la logica de switch de errores detallada.
 ## Script Mi Perfil Me Gusta Posts
 
 ### Ubicacion
-`Scripts/Script mi perfil - me gusta posts.js`
+`Scripts/Script-mi-perfil-me-gusta-posts.js`
 
 ### Proposito
 Carga las publicaciones que el usuario ha dado like.
@@ -553,7 +553,7 @@ function eliminarLikePost(idPub, botonLike)
 ## Script Vista Publicacion
 
 ### Ubicacion
-`Scripts/Script vista-publicacion.js`
+`Scripts/Script-publicacion.js`
 
 ### Proposito
 Maneja la vista detallada de una publicacion y su sistema de comentarios.
@@ -856,10 +856,10 @@ html, body {
 El proyecto utiliza `localStorage` para pasar datos entre paginas:
 
 ```javascript
-// Guardar (en index.html, mi perfil.html, etc.)
+// Guardar (en index.html, mi-perfil.html, etc.)
 localStorage.setItem("idPub", idPub);
 
-// Leer (en vista-publicacion.html)
+// Leer (en publicacion.html)
 let idPub = localStorage.getItem("idPub");
 ```
 
@@ -872,10 +872,10 @@ let idPub = localStorage.getItem("idPub");
 index.html
     |
     +-- Clic en "Comentarios" --> localStorage.setItem("idPub", id)
-    |                               window.location.href = "vista-publicacion.html"
+    |                               window.location.href = "publicacion.html"
     |
     v
-vista-publicacion.html
+publicacion.html
     |
     +-- Lee localStorage.getItem("idPub")
     +-- Carga datos de la publicacion
@@ -1249,11 +1249,11 @@ switch(xhr.status) {
 
 ### 5. Archivos a Modificar
 
-1. `Scripts/Script general.js` - Reemplazar funciones de localStorage por AJAX
-2. `Scripts/Script index.js` - Actualizar llamadas a funciones
-3. `Scripts/Script mi perfil posts.js` - Actualizar llamadas a funciones
-4. `Scripts/Script mi perfil - me gusta posts.js` - Actualizar llamadas a funciones
-5. `Scripts/Script vista-publicacion.js` - Actualizar llamadas a funciones
+1. `Scripts/Script-general.js` - Reemplazar funciones de localStorage por AJAX
+2. `Scripts/Script-index.js` - Actualizar llamadas a funciones
+3. `Scripts/Script-mi-perfil-posts.js` - Actualizar llamadas a funciones
+4. `Scripts/Script-mi-perfil-me-gusta-posts.js` - Actualizar llamadas a funciones
+5. `Scripts/Script-publicacion.js` - Actualizar llamadas a funciones
 
 ### 6. Pruebas
 

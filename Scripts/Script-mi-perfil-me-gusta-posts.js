@@ -1,9 +1,9 @@
-function generarHTMLPublicacion(publicacionresponse, contenedor) {
+function generarHTMLPublicacionLike(publicacionresponse) {
     let tipoLike = publicacionresponse.likePropio ? 
         `<i class="bi bi-hand-thumbs-up-fill me-1"></i>` : 
         `<i class="bi bi-hand-thumbs-up me-1"></i>`;
     let foto = publicacionresponse.idUsuario == "2177709" ? 
-        "Imagenes/Perfil - Uziel Omar Flores Torres.png" : 
+        "Imagenes/Perfil-Uziel-Omar-Flores-Torres.png" : 
         "Imagenes/Perfil.png";
     let espOp = publicacionresponse.idUsuario == "2177709" ? "me-5" : "";
     let opciones = publicacionresponse.idUsuario == "2177709" ? `
@@ -48,121 +48,89 @@ function generarHTMLPublicacion(publicacionresponse, contenedor) {
         </div>
     `;
     
-    if (contenedor === "prepend") {
-        $("#Publicaciones").prepend(publicacion);
-    } else {
-        $("#Publicaciones").append(publicacion);
-    }
+    $("#PublicacionesLike").append(publicacion);
 }
 
-function Publicaciones() {
-    $("#Publicaciones").empty();
+function PublicacionesLike() {
+    $("#PublicacionesLike").empty();
     
     let publicaciones = obtenerPublicaciones();
-    publicaciones.sort((a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion));
+    let publicacionesLike = publicaciones
+        .filter(p => p.likePropio === true)
+        .sort((a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion));
     
-    $(publicaciones).each(function (index, publicacionresponse) {
-        generarHTMLPublicacion(publicacionresponse, "append");
+    $(publicacionesLike).each(function (index, publicacionresponse) {
+        generarHTMLPublicacionLike(publicacionresponse);
     });
     
-    if (publicaciones.length === 0) {
-        $("#Publicaciones").html(`
+    if (publicacionesLike.length === 0) {
+        $("#PublicacionesLike").html(`
             <div class="card mb-3 clrtar">
                 <div class="card-body text-center">
-                    <i class="bi bi-inbox fs-1 text-body-secondary"></i>
-                    <h5 class="mt-3">No hay publicaciones</h5>
-                    <p class="text-body-secondary">Se la primera en publicar algo!</p>
+                    <i class="bi bi-hand-thumbs-up fs-1 text-body-secondary"></i>
+                    <h5 class="mt-3">No has dado Me gusta a nada</h5>
+                    <p class="text-body-secondary">Explora las publicaciones y dale like a las que te gusten!</p>
                 </div>
             </div>
         `);
     }
 }
 
-function PublicacionNueva(idPub) {
-    let publicaciones = obtenerPublicaciones();
-    let publicacion = publicaciones.find(p => p.idPublicacion == idPub);
-    
-    if (publicacion) {
-        generarHTMLPublicacion(publicacion, "prepend");
-    }
-}
-
-function crearPublicacion() {
-    let contenido = $("#textopub").val().trim();
-    
-    if (contenido.length < 3) {
-        Swal.fire({
-            icon: "warning",
-            title: "Ups, no podemos publicar eso",
-            text: "Verifica que tu publicacion sea mayor que tres caracteres."
-        });
-        return;
-    }
-    
-    if (contenido.length > 500) {
-        Swal.fire({
-            icon: "warning",
-            title: "Ups, no podemos publicar eso",
-            text: "Tu publicacion no puede exceder los 500 caracteres."
-        });
-        return;
-    }
-    
-    let publicaciones = obtenerPublicaciones();
-    let nuevoId = obtenerSiguienteIdPublicacion();
-    
-    let nuevaPublicacion = {
-        idPublicacion: nuevoId,
-        idUsuario: matricula,
-        nombre: nombreUsuario,
-        contenido: contenido,
-        fechaPublicacion: new Date().toISOString(),
-        cantidadLikes: 0,
-        cantidadComentarios: 0,
-        likePropio: false
-    };
-    
-    publicaciones.unshift(nuevaPublicacion);
-    guardarPublicaciones(publicaciones);
-    
-    document.getElementById("textopub").value = "";
-    PublicacionNueva(nuevoId);
-    
-    Swal.fire({
-        icon: "success",
-        title: "Publicado!",
-        text: "Tu publicacion se ha creado exitosamente.",
-        timer: 1500,
-        showConfirmButton: false
+function eliminarLikePost(idPub, botonLike) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            let publicaciones = obtenerPublicaciones();
+            let pubIndex = publicaciones.findIndex(p => p.idPublicacion == idPub);
+            
+            if (pubIndex !== -1 && publicaciones[pubIndex].likePropio) {
+                publicaciones[pubIndex].cantidadLikes--;
+                if (publicaciones[pubIndex].cantidadLikes < 0) {
+                    publicaciones[pubIndex].cantidadLikes = 0;
+                }
+                publicaciones[pubIndex].likePropio = false;
+                guardarPublicaciones(publicaciones);
+                
+                let pub = $("#publicacion-" + idPub);
+                pub.remove();
+                
+                if ($("#PublicacionesLike").children().length === 0) {
+                    $("#PublicacionesLike").html(`
+                        <div class="card mb-3 clrtar">
+                            <div class="card-body text-center">
+                                <i class="bi bi-hand-thumbs-up fs-1 text-body-secondary"></i>
+                                <h5 class="mt-3">No has dado Me gusta a nada</h5>
+                                <p class="text-body-secondary">Explora las publicaciones y dale like a las que te gusten!</p>
+                            </div>
+                        </div>
+                    `);
+                }
+                
+                resolve({ success: true });
+            } else {
+                reject({ status: 400, message: "No has dado like" });
+            }
+        }, 300 + Math.random() * 400);
     });
 }
 
-$("#publicar").submit(function (event) {
-    if (!this.checkValidity()) {
-        event.preventDefault();
-        event.stopPropagation();
-    } else {
-        crearPublicacion();
-        event.preventDefault();
+$("#PublicacionesLike").on("click", ".likebtn", function () {
+    let idPub = $(this).data("id-publicacion");
+    let likeMio = $(this).find("i");
+    if (likeMio.hasClass("bi-hand-thumbs-up-fill")) {
+        eliminarLikePost(idPub, $(this)).catch(function(err) {
+            console.log("Error al quitar like:", err);
+        });
     }
-    this.classList.add('was-validated');
 });
 
-$("#Publicaciones").on("click", ".combtn", function () {
+$("#PublicacionesLike").on("click", ".combtn", function () {
     let idPub = $(this).data("id-publicacion");
     localStorage.setItem("idPub", idPub);
-    window.location.href = "vista-publicacion.html";
+    window.location.href = "publicacion.html";
 });
 
-const texto = document.getElementById("textopub");
 const editar = document.getElementById("message-text");
 const altmax = 300;
-
-texto.addEventListener("input", function() {
-    this.style.height = "auto";
-    let nuevaAlt = Math.min(this.scrollHeight, altmax);
-    this.style.height = nuevaAlt + "px";
-});
 
 editar.addEventListener("input", function() {
     this.style.height = "auto";
@@ -172,5 +140,5 @@ editar.addEventListener("input", function() {
 
 $(document).ready(function () {
     inicializarDatos();
-    Publicaciones();
+    PublicacionesLike();
 });

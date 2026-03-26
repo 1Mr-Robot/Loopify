@@ -2,7 +2,7 @@ function generarHTMLPublicacionPerfil(publicacionresponse, contenedor) {
     let tipoLike = publicacionresponse.likePropio ? 
         `<i class="bi bi-hand-thumbs-up-fill me-1"></i>` : 
         `<i class="bi bi-hand-thumbs-up me-1"></i>`;
-    let foto = "Imagenes/Perfil - Uziel Omar Flores Torres.png";
+    let foto = "Imagenes/Perfil-Uziel-Omar-Flores-Torres.png";
     let espOp = "me-5";
     let opciones = `
         <div class="dropdown position-absolute top-0 end-0 p-2">
@@ -168,7 +168,7 @@ $("#publicar").submit(function (event) {
 $("#PublicacionesUsuario").on("click", ".combtn", function () {
     let idPub = $(this).data("id-publicacion");
     localStorage.setItem("idPub", idPub);
-    window.location.href = "vista-publicacion.html";
+    window.location.href = "publicacion.html";
 });
 
 const texto = document.getElementById("textopub");

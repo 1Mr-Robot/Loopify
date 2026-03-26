@@ -41,21 +41,21 @@ El proposito de este proyecto es aplicar los conocimientos adquiridos durante el
 - Sistema de likes para cada publicacion
 - Visualizacion de detalles de publicacion
 
-### Perfil de Usuario (mi perfil.html)
+### Perfil de Usuario (mi-perfil.html)
 - Informacion del perfil de usuario
 - Seccion de publicaciones propias
 - Formulario para crear nuevas publicaciones
 - Opciones de edicion y eliminacion de publicaciones propias
 
-### Seccion "Tu Informacion" (mi perfil - informacion.html)
+### Seccion "Tu Informacion" (mi-perfil-informacion.html)
 - Datos personales del usuario (nombre, matricula, descripcion)
 - Estadisticas de actividad
 
-### Seccion "Tus Me Gusta" (mi perfil - me gusta.html)
+### Seccion "Tus Me Gusta" (mi-perfil-me-gusta.html)
 - Lista de publicaciones a las que el usuario ha dado like
 - Visualizacion y navegacion a cada publicacion
 
-### Vista de Publicacion (vista-publicacion.html)
+### Vista de Publicacion (publicacion.html)
 - Vista detallada de una publicacion individual
 - Sistema de comentarios
 - Seccion para escribir nuevos comentarios
@@ -100,27 +100,27 @@ El proyecto utiliza **localStorage** para almacenar y persistir los datos:
 Loopify/
 |
 |-- index.html                              # Pagina principal - Feed de publicaciones
-|-- mi perfil.html                          # Perfil del usuario con sus publicaciones
-|-- mi perfil - informacion.html            # Informacion personal del usuario
-|-- mi perfil - me gusta.html               # Publicaciones liked por el usuario
-|-- vista-publicacion.html                  # Vista detallada de una publicacion
+|-- mi-perfil.html                          # Perfil del usuario con sus publicaciones
+|-- mi-perfil-informacion.html              # Informacion personal del usuario
+|-- mi-perfil-me-gusta.html                 # Publicaciones liked por el usuario
+|-- publicacion.html                        # Vista detallada de una publicacion
 |
 |-- Scripts/
-|   |-- Script general.js                   # Sistema de datos y funciones compartidas
-|   |-- Script index.js                     # Logica de la pagina de inicio
-|   |-- Script mi perfil.js                 # Logica de la pagina de perfil (responsive)
-|   |-- Script mi perfil posts.js           # Logica de publicaciones en perfil
-|   |-- Script mi perfil - me gusta posts.js # Logica de seccion de likes
-|   |-- Script vista-publicacion.js         # Logica de vista de publicacion
+|   |-- Script-general.js                   # Sistema de datos y funciones compartidas
+|   |-- Script-index.js                     # Logica de la pagina de inicio
+|   |-- Script-mi-perfil.js                 # Logica de la pagina de perfil (responsive)
+|   |-- Script-mi-perfil-posts.js           # Logica de publicaciones en perfil
+|   |-- Script-mi-perfil-me-gusta-posts.js  # Logica de seccion de likes
+|   |-- Script-publicacion.js               # Logica de vista de publicacion
 |
 |-- Styles/
 |   |-- Style.css                           # Estilos CSS personalizados
 |
 |-- Imagenes/
 |   |-- Logo.png                            # Logo principal de Loopify
-|   |-- Logo icono.png                      # Icono del logo
-|   |-- Foto portada.jpg                    # Imagen de portada del perfil
-|   |-- Perfil - Uziel Omar Flores Torres.png  # Foto de perfil del usuario
+|   |-- Logo-icono.png                      # Icono del logo
+|   |-- Foto-portada.jpg                    # Imagen de portada del perfil
+|   |-- Perfil-Uziel-Omar-Flores-Torres.png # Foto de perfil del usuario
 |   |-- Perfil.png                          # Foto generica para otros usuarios
 |
 |-- README.md                              # Documentacion del proyecto
