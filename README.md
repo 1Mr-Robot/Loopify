@@ -16,7 +16,8 @@ Este es el examen de medio curso de Uziel Omar Flores Torres para la materia "Pr
 
 Loopify es una mini red social estilo Feed de publicaciones desarrollada como proyecto academico para la materia de Programacion Web. La aplicacion permite a los usuarios crear, editar y eliminar publicaciones, asi como interactuar con ellas mediante un sistema de likes y comentarios.
 
-> **Nota:** La API externa original proporcionada por el profesor Luis Daniel Lepe Rodriguez ya no esta disponible. Esta version (rama `demo`) ha sido modificada para funcionar con datos estaticos almacenados en localStorage, permitiendo simular todas las funcionalidades de la red social sin necesidad de un servidor.
+> [!NOTE]
+> La API externa original proporcionada por el profesor Luis Daniel Lepe Rodriguez ya no esta disponible. Esta version (rama `demo`) ha sido modificada para funcionar con datos estaticos almacenados en localStorage, permitiendo simular todas las funcionalidades de la red social sin necesidad de un servidor.
 
 ---
 
