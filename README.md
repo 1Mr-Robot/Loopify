@@ -6,6 +6,10 @@ Este proyecto consiste en una mi red social que consume de una API creada por el
 
 Actualmente la API se encuentra cerrada y ya no se puede acceder más.
 
+<p align="center">
+    <img src="https://uziel.app/media/projects/loopify/og.webp" alt="hero"  />
+</p>
+
 ---
 
 ## Informacion del Alumno
