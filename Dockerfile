@@ -1,4 +1,4 @@
-FROM nginx:alpine
+FROM nginx:latest
 
 # Elimina la configuración por defecto de nginx
 RUN rm /etc/nginx/conf.d/default.conf
